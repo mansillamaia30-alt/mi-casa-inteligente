@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Casa Inteligente</title>
+  <style>
+    :root {
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #e5eaf2;
+      --primary: #4263eb;
+      --primary-soft: #edf1ff;
+      --green: #169b62;
+      --green-soft: #e7f8ef;
+      --red: #d64545;
+      --red-soft: #fff0f0;
+      --shadow: 0 8px 24px rgba(25, 42, 70, .07);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    .app { max-width: 1100px; margin: 0 auto; padding: 24px 16px 40px; }
+    /* Diseño inspirado en la referencia visual enviada */
+    body { background: #edf3fa; }
+    .app { max-width: 1440px; padding: 20px 22px 28px 250px; position: relative; }
+    .app::before {
+      content: ""; position: fixed; z-index: -1; inset: 0 auto 0 0; width: 220px;
+      background: linear-gradient(180deg, #062849, #061c35 75%, #082e4c);
+    }
+    .app header { min-height: 72px; }
+    .app .brand-icon { width: 60px; height: 60px; background: transparent; box-shadow: none; }
+    .app .brand-icon::after { display: none; }
+    .app .brand-icon svg { width: 56px; height: 56px; }
+    .app header .brand { color: #0a376a; }
+    .app header .brand::after { content: "DOMÓTICA & ARDUINO"; display: block; position: absolute; left: 335px; top: 60px; color: #496b90; font-size: 10px; letter-spacing: 2px; }
+    .app header .subtitle { display: none; }
+    .app header .demo { background: #e3edf9; color: #1d4777; border-color: #d7e4f5; }
+    .app .sidebar-brand {
+      position: fixed; z-index: 5; top: 20px; left: 0; width: 220px; height: 175px;
+      color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      pointer-events: none;
+    }
+    .app .sidebar-brand svg { width: 70px; height: 70px; }
+    .app .sidebar-brand strong { font-size: 19px; }
+    .app .sidebar-brand small { font-size: 8px; letter-spacing: 1.4px; }
+    .app .sidebar-nav {
+      position: fixed; z-index: 5; top: 205px; left: 12px; width: 196px;
+      display: grid; gap: 8px;
+    }
+    .app .sidebar-nav a {
+      display: flex; align-items: center; gap: 12px; color: #e6f1ff; text-decoration: none;
+      padding: 12px 14px; border-radius: 11px; font-size: 14px;
+    }
+    .app .sidebar-nav a:first-child, .app .sidebar-nav a:hover { background: #1760a6; }
+    .app .sidebar-bottom {
+      position: fixed; z-index: 5; bottom: 22px; left: 24px; width: 170px; padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.2); color: #a7c3e2; font-size: 12px;
+    }
+    .app .hero {
+      display: flex; align-items: center; min-height: 165px; padding: 26px 30px; border-radius: 15px;
+      color: white; background: linear-gradient(90deg, rgba(6,37,74,.97), rgba(6,37,74,.76) 48%, rgba(6,37,74,.15)),
+      url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=80') center 54%/cover;
+      margin: 0 0 18px;
+    }
+    .app .hero h2 { font-size: 28px; line-height: 1.12; margin: 5px 0; }
+    .app .hero p { max-width: 410px; line-height: 1.5; margin: 6px 0 0; color: #e5efff; }
+    .app .panel { border-color: #dce8f6; border-radius: 15px; box-shadow: 0 4px 16px rgba(24,58,96,.045); }
+    .app .device { border-color: #dfe9f5; background: #f7faff; border-radius: 12px; }
+    .app .device.active { background: #eef8ff; border-color: #a8d4ec; }
+    .app .toggle { border-radius: 999px; }
+    .app .device.active .toggle { background: linear-gradient(90deg, #009e9a, #0d7eb0); }
+    .app .action.primary { background: linear-gradient(90deg, #00a99d, #087ba7); border-color: transparent; }
+    .app .garage-status { background: #f4f8fd; }
+    .app .app-nav-icon { font-size: 20px; width: 24px; text-align: center; }
+    @media (max-width: 900px) {
+      .app { padding: 16px 12px 24px; }
+      .app::before, .app .sidebar-brand, .app .sidebar-nav, .app .sidebar-bottom { display: none; }
+      .app header .brand::after { display: none; }
+      .app .hero { min-height: 140px; padding: 20px; }
+      .app .hero h2 { font-size: 23px; }
+    }
+
+    .app.dashboard-hidden { display: none; }
+    .welcome-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 24px; position: relative; overflow: hidden;
+      background: radial-gradient(circle at 15% 15%, rgba(29, 194, 211, .18), transparent 32%),
+                  radial-gradient(circle at 85% 85%, rgba(66, 99, 235, .18), transparent 35%),
+                  linear-gradient(145deg, #061a33, #0c3158 58%, #075c76);
+      color: #fff;
+    }
+    .welcome-screen::before, .welcome-screen::after {
+      content: ""; position: absolute; border: 1px solid rgba(143,244,255,.12);
+      border-radius: 50%; width: 430px; height: 430px; animation: orbit 18s linear infinite;
+    }
+    .welcome-screen::after { width: 580px; height: 580px; animation-duration: 28s; }
+    .welcome-content { position: relative; z-index: 1; width: min(520px, 100%); text-align: center; }
+    .welcome-logo {
+      width: 118px; height: 118px; display: grid; place-items: center; margin: 0 auto 22px;
+      border: 1px solid rgba(143,244,255,.45); border-radius: 32px;
+      background: rgba(255,255,255,.07); box-shadow: 0 0 45px rgba(15,194,210,.14);
+      animation: houseAppear .9s ease-out both;
+    }
+    .welcome-logo svg { width: 86px; height: 86px; }
+    .welcome-logo .house-line { fill:none; stroke:#72e9f4; stroke-width:2.3; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:170; stroke-dashoffset:170; animation:drawCircuit 2s ease forwards; }
+    .welcome-logo .bulb { fill:none; stroke:#fff; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; animation:bulbGlow 2.8s ease-in-out infinite; transform-origin:24px 27px; }
+    .welcome-content h1 { font-size: clamp(2rem, 7vw, 3.2rem); letter-spacing: -.045em; margin: 0; }
+    .welcome-content .tagline { color: #9beef5; font-weight: 700; letter-spacing: .17em; font-size: .78rem; margin: 10px 0 18px; }
+    .welcome-content .intro { color: #d4e3f4; line-height: 1.65; max-width: 390px; margin: 0 auto 28px; }
+    .enter-button {
+      border: 0; border-radius: 14px; padding: 14px 25px; color: #062341;
+      background: linear-gradient(100deg, #8df3ed, #b9f7ff); font: inherit; font-weight: 800;
+      cursor: pointer; box-shadow: 0 8px 28px rgba(20,202,205,.2); transition: transform .2s, box-shadow .2s;
+    }
+    .enter-button:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(20,202,205,.28); }
+    .welcome-footer { color: #9fb7d1; font-size: .78rem; margin-top: 26px; }
+    .welcome-screen.leaving { animation: welcomeFade .55s ease forwards; }
+    @keyframes orbit { to { transform: rotate(360deg); } }
+    @keyframes welcomeFade { to { opacity: 0; transform: scale(1.025); visibility: hidden; } }
+    @media (prefers-reduced-motion: reduce) {
+      .welcome-screen::before, .welcome-screen::after, .welcome-logo, .welcome-logo .house-line,
+      .welcome-logo .bulb, .welcome-screen.leaving { animation: none !important; }
+      .welcome-logo .house-line { stroke-dashoffset: 0; }
+    }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; margin-bottom: 22px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon {
+      display: grid; place-items: center; width: 50px; height: 50px;
+      border-radius: 16px; background: var(--primary); color: white; font-size: 26px;
+    }
+
+    .brand-icon {
+      position: relative;
+      overflow: hidden;
+      animation: houseAppear .9s ease-out both;
+      background: linear-gradient(135deg, #09284b, #087f9b);
+    }
+    .brand-icon svg { width: 40px; height: 40px; overflow: visible; }
+    .brand-icon .house-line {
+      fill: none; stroke: #8ff4ff; stroke-width: 2.6; stroke-linecap: round;
+      stroke-linejoin: round; stroke-dasharray: 170; stroke-dashoffset: 170;
+      animation: drawCircuit 2s ease forwards;
+    }
+    .brand-icon .bulb {
+      fill: none; stroke: #ffffff; stroke-width: 2.4; stroke-linecap: round;
+      stroke-linejoin: round; animation: bulbGlow 2.8s ease-in-out infinite;
+      transform-origin: 24px 27px;
+    }
+    .brand-icon::after {
+      content: ""; position: absolute; inset: -40% auto -40% -70%; width: 45%;
+      transform: rotate(22deg);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+      animation: logoShine 4.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes houseAppear {
+      from { opacity: 0; transform: translateY(7px) scale(.94); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes drawCircuit { to { stroke-dashoffset: 0; } }
+    @keyframes bulbGlow {
+      0%, 100% { filter: drop-shadow(0 0 0 rgba(143,244,255,0)); }
+      50% { filter: drop-shadow(0 0 5px rgba(143,244,255,.95)); }
+    }
+    @keyframes logoShine {
+      0%, 55% { left: -70%; }
+      85%, 100% { left: 130%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .brand-icon, .brand-icon .house-line, .brand-icon .bulb, .brand-icon::after {
+        animation: none !important;
+      }
+      .brand-icon .house-line { stroke-dashoffset: 0; }
+    }
+
+    h1 { font-size: clamp(1.35rem, 4vw, 2rem); margin: 0; letter-spacing: -.04em; }
+    .subtitle { color: var(--muted); margin: 4px 0 0; font-size: .92rem; }
+    .demo {
+      background: #fff8df; color: #805d00; border: 1px solid #f4e4a9;
+      border-radius: 999px; padding: 8px 12px; font-size: .78rem; font-weight: 700;
+      white-space: nowrap;
+    }
+    .summary {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px;
+    }
+    .summary-card, .panel, .device {
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .summary-card { padding: 16px; }
+    .summary-top { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: .9rem; }
+    .summary-icon { font-size: 1.35rem; }
+    .summary-number { font-size: 1.7rem; font-weight: 800; margin-top: 8px; }
+    .layout { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; align-items: start; }
+    .column { display: grid; gap: 18px; }
+    .panel { padding: 20px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+    h2 { margin: 0; font-size: 1.12rem; }
+    .panel-description { color: var(--muted); font-size: .86rem; margin: 5px 0 0; }
+    .device-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .device { padding: 15px; box-shadow: none; transition: border-color .2s, background .2s; }
+    .device.active { border-color: #c7d2fe; background: #fbfcff; }
+    .device-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .device-icon {
+      width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px;
+      background: #f0f3f9; font-size: 1.35rem;
+    }
+    .device.active .device-icon { background: #fff1bf; }
+    .device-name { font-weight: 750; margin-top: 11px; }
+    .device-detail { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+    .status { font-size: .72rem; font-weight: 750; border-radius: 999px; padding: 5px 8px; background: #eef1f5; color: #606b7c; }
+    .status.on { background: var(--green-soft); color: var(--green); }
+    .status.open { background: var(--green-soft); color: var(--green); }
+    .status.closed { background: #eef1f5; color: #606b7c; }
+    .toggle {
+      width: 100%; margin-top: 14px; border: 0; border-radius: 11px; padding: 10px 12px;
+      background: var(--primary-soft); color: var(--primary); font: inherit; font-weight: 750;
+      cursor: pointer; transition: filter .15s, transform .15s;
+    }
+    .toggle:hover, .action:hover { filter: brightness(.97); }
+    .toggle:active, .action:active { transform: scale(.99); }
+    .device.active .toggle { background: var(--primary); color: white; }
+    .actions { display: flex; gap: 8px; margin-top: 14px; }
+    .action {
+      flex: 1; border: 1px solid var(--line); border-radius: 10px; padding: 10px 8px;
+      background: white; color: var(--text); font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer;
+    }
+    .action.primary { background: var(--primary); border-color: var(--primary); color: white; }
+    .action:disabled { opacity: .45; cursor: not-allowed; }
+    .garage-status {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 13px; background: #f8fafc; border-radius: 13px; margin-top: 14px;
+    }
+    .signal { display: flex; align-items: center; gap: 8px; font-size: .86rem; font-weight: 700; }
+    .lamp { width: 13px; height: 13px; border-radius: 50%; background: #cbd5e1; box-shadow: 0 0 0 4px #e9edf3; }
+    .lamp.green.active { background: #19a463; box-shadow: 0 0 0 4px #d8f5e5; }
+    .lamp.red.active { background: #df4545; box-shadow: 0 0 0 4px #ffe0e0; }
+    .note { color: var(--muted); font-size: .8rem; line-height: 1.5; margin: 16px 2px 0; }
+    .reset { background: transparent; border: 1px solid var(--line); color: var(--muted); padding: 8px 11px; border-radius: 10px; cursor: pointer; font: inherit; font-size: .8rem; }
+    footer { text-align: center; color: var(--muted); font-size: .8rem; padding-top: 24px; }
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+      .summary { gap: 8px; }
+      .summary-card { padding: 12px; }
+      .summary-top { font-size: .76rem; gap: 6px; }
+      .summary-number { font-size: 1.4rem; }
+      .demo { font-size: .68rem; padding: 7px 9px; }
+      .panel { padding: 15px; }
+    }
+    @media (max-width: 420px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .device-grid { gap: 9px; }
+      .device { padding: 12px; }
+      .device-name { font-size: .92rem; }
+    }
+  </style>
+</head>
+<body>
+  <section class="welcome-screen" id="welcomeScreen">
+    <div class="welcome-content">
+      <div class="welcome-logo" role="img" aria-label="Logo de casita inteligente">
+        <svg viewBox="0 0 48 48" aria-hidden="true">
+          <path class="house-line" d="M5 21 L23 5 L31 12 L31 7 L37 7 L37 17 L44 23 L39 23 L39 42 L28 42 L28 30 C28 25 20 25 20 30 L20 42 L9 42 L9 23 Z"/>
+          <path class="house-line" d="M13 22 L19 17 M31 20 L35 24 M13 29 L13 36 M35 29 L35 36"/>
+          <path class="bulb" d="M20 28 C20 22 28 22 28 28 C28 31 26 32 26 35 L22 35 C22 32 20 31 20 28 Z M22 38 L26 38 M23 41 L25 41"/>
+        </svg>
+      </div>
+      <h1>Mi Casa Inteligente</h1>
+      <p class="tagline">DOMÓTICA &amp; ARDUINO</p>
+      <p class="intro">Controlá la iluminación, las puertas y el portón de tu maqueta desde un solo lugar.</p>
+      <button class="enter-button" id="enterApp">Ingresar a mi hogar&nbsp; →</button>
+      <div class="welcome-footer">Tu casa, en tus manos · Panel de demostración</div>
+    </div>
+  </section>
+  <main class="app dashboard-hidden" id="dashboard">
+    <div class="sidebar-brand" aria-label="Smart Home Domótica y Arduino">
+      <svg viewBox="0 0 48 48" aria-hidden="true">
+        <path class="house-line" d="M5 21 L23 5 L31 12 L31 7 L37 7 L37 17 L44 23 L39 23 L39 42 L28 42 L28 30 C28 25 20 25 20 30 L20 42 L9 42 L9 23 Z"/>
+        <path class="house-line" d="M13 22 L19 17 M31 20 L35 24 M13 29 L13 36 M35 29 L35 36"/>
+        <path class="bulb" d="M20 28 C20 22 28 22 28 28 C28 31 26 32 26 35 L22 35 C22 32 20 31 20 28 Z M22 38 L26 38 M23 41 L25 41"/>
+      </svg>
+      <strong>Smart Home</strong><small>DOMÓTICA &amp; ARDUINO</small>
+    </div>
+    <nav class="sidebar-nav" aria-label="Navegación principal">
+      <a href="#inicio"><span class="app-nav-icon">⌂</span>Inicio</a>
+      <a href="#iluminacion"><span class="app-nav-icon">♧</span>Luces</a>
+      <a href="#puertas"><span class="app-nav-icon">🚪</span>Puertas</a>
+      <a href="#porton"><span class="app-nav-icon">▤</span>Portón</a>
+      <a href="#configuracion"><span class="app-nav-icon">⚙</span>Configuración</a>
+    </nav>
+    <div class="sidebar-bottom">⌁ &nbsp; Sistema offline</div>
+    <header id="inicio">
+      <div class="brand">
+        <div class="brand-icon" aria-label="Logo animado de casita inteligente" role="img">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path class="house-line" d="M5 21 L23 5 L31 12 L31 7 L37 7 L37 17 L44 23 L39 23 L39 42 L28 42 L28 30 C28 25 20 25 20 30 L20 42 L9 42 L9 23 Z"/>
+            <path class="house-line" d="M13 22 L19 17 M31 20 L35 24 M13 29 L13 36 M35 29 L35 36"/>
+            <path class="bulb" d="M20 28 C20 22 28 22 28 28 C28 31 26 32 26 35 L22 35 C22 32 20 31 20 28 Z M22 38 L26 38 M23 41 L25 41"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Mi Casa Inteligente</h1>
+          <p class="subtitle">Panel de control de tu maqueta</p>
+        </div>
+      </div>
+      <span class="demo">● MODO DEMOSTRACIÓN</span>
+    </header>
+
+    <section class="hero">
+      <div>
+        <div style="font-size:1rem;color:#bfeaf4">Bienvenido a tu</div>
+        <h2>Casa Inteligente</h2>
+        <p>Controlá la iluminación, las puertas y el portón desde un solo lugar.</p>
+      </div>
+    </section>
+
+    <section class="summary" aria-label="Resumen de la casa">
+      <div class="summary-card">
+        <div class="summary-top"><span class="summary-icon">💡</span> Luces encendidas</div>
+        <div class="summary-number" id="lightsCount">0 <span style="font-size:.85rem;color:#667085;font-weight:600">/ 8</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-top"><span class="summary-icon">🚪</span> Puertas abiertas</div>
+        <div class="summary-number" id="doorsCount">0 <span style="font-size:.85rem;color:#667085;font-weight:600">/ 3</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-top"><span class="summary-icon">🚗</span> Portón</div>
+        <div class="summary-number" id="gateSummary" style="font-size:1.25rem">Cerrado</div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <div class="column">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>💡 Iluminación interior</h2>
+              <p class="panel-description">Cada botón controla las dos luces de ese ambiente.</p>
+            </div>
+            <button class="reset" id="allLightsOff">Apagar todo</button>
+          </div>
+          <div class="device-grid">
+            <article class="device" id="kitchenCard">
+              <div class="device-top"><div class="device-icon">🍽️</div><span class="status" id="kitchenStatus">APAGADO</span></div>
+              <div class="device-name">Cocina y comedor</div>
+              <div class="device-detail">2 luces · 1 control</div>
+              <button class="toggle" data-light="kitchen" aria-pressed="false">Encender luces</button>
+            </article>
+            <article class="device" id="stairsCard">
+              <div class="device-top"><div class="device-icon">🪜</div><span class="status" id="stairsStatus">APAGADO</span></div>
+              <div class="device-name">Escalera</div>
+              <div class="device-detail">2 luces · 1 control</div>
+              <button class="toggle" data-light="stairs" aria-pressed="false">Encender luces</button>
+            </article>
+            <article class="device" id="livingCard">
+              <div class="device-top"><div class="device-icon">🛋️</div><span class="status" id="livingStatus">APAGADO</span></div>
+              <div class="device-name">Living</div>
+              <div class="device-detail">2 luces · 1 control</div>
+              <button class="toggle" data-light="living" aria-pressed="false">Encender luces</button>
+            </article>
+            <article class="device" id="garageLightsCard">
+              <div class="device-top"><div class="device-icon">🚘</div><span class="status" id="garageLightsStatus">APAGADO</span></div>
+              <div class="device-name">Luces del garaje</div>
+              <div class="device-detail">2 luces · control independiente</div>
+              <button class="toggle" data-light="garageLights" aria-pressed="false">Encender luces</button>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>🚪 Puertas</h2>
+              <p class="panel-description">Tres puertas controladas por servomotores.</p>
+            </div>
+          </div>
+          <div class="device-grid">
+            <article class="device" id="door1Card">
+              <div class="device-top"><div class="device-icon">🚪</div><span class="status closed" id="door1Status">CERRADA</span></div>
+              <div class="device-name">Puerta 1</div>
+              <div class="device-detail">Servomotor 1</div>
+              <div class="actions"><button class="action primary" data-door="door1">Abrir</button><button class="action" data-close-door="door1">Cerrar</button></div>
+            </article>
+            <article class="device" id="door2Card">
+              <div class="device-top"><div class="device-icon">🚪</div><span class="status closed" id="door2Status">CERRADA</span></div>
+              <div class="device-name">Puerta 2</div>
+              <div class="device-detail">Servomotor 2</div>
+              <div class="actions"><button class="action primary" data-door="door2">Abrir</button><button class="action" data-close-door="door2">Cerrar</button></div>
+            </article>
+            <article class="device" id="mainDoorCard">
+              <div class="device-top"><div class="device-icon">🏠</div><span class="status closed" id="mainDoorStatus">CERRADA</span></div>
+              <div class="device-name">Puerta principal</div>
+              <div class="device-detail">Servomotor 3</div>
+              <div class="actions"><button class="action primary" data-door="mainDoor">Abrir</button><button class="action" data-close-door="mainDoor">Cerrar</button></div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <div class="column">
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>🚗 Portón del garaje</h2>
+              <p class="panel-description">Control simulado del cuarto servomotor.</p>
+            </div>
+          </div>
+          <article class="device" id="gateCard">
+            <div class="device-top"><div class="device-icon">🚘</div><span class="status closed" id="gateStatus">CERRADO</span></div>
+            <div class="device-name">Portón automático</div>
+            <div class="device-detail">Servo 4 · Indicadores de estado</div>
+            <div class="actions"><button class="action primary" id="openGate">Abrir portón</button><button class="action" id="closeGate">Cerrar portón</button></div>
+            <div class="garage-status">
+              <div class="signal"><span class="lamp green" id="greenLamp"></span> Luz verde: abierto</div>
+              <div class="signal"><span class="lamp red active" id="redLamp"></span> Luz roja: cerrado</div>
+            </div>
+          </article>
+          <p class="note">Las luces roja y verde son indicadores simulados en esta pantalla. Más adelante se conectarán a los LED de la maqueta.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>ℹ️ Estado del sistema</h2>
+              <p class="panel-description">Información de esta demostración.</p>
+            </div>
+          </div>
+          <div class="garage-status">
+            <div>
+              <div style="font-weight:750">Conexión con Arduino</div>
+              <div class="device-detail" id="connectionStatus">Todavía no conectada</div>
+            </div>
+            <span class="status">SIN CONEXIÓN</span>
+          </div>
+          <p class="note">Podés probar todos los botones sin conectar la placa. Los cambios se muestran solamente en el navegador; todavía no mueven los servos ni encienden los LED reales.</p>
+        </section>
+      </div>
+    </div>
+    <footer>Mi Casa Inteligente · Interfaz inicial para la maqueta con Arduino Mega 2560</footer>
+  </main>
+
+  <script>
+    const state = {
+      kitchen: false,
+      stairs: false,
+      living: false,
+      garageLights: false,
+      door1: false,
+      door2: false,
+      mainDoor: false,
+      gate: false
+    };
+
+    const lightInfo = {
+      kitchen: { card: "kitchenCard", status: "kitchenStatus" },
+      stairs: { card: "stairsCard", status: "stairsStatus" },
+      living: { card: "livingCard", status: "livingStatus" },
+      garageLights: { card: "garageLightsCard", status: "garageLightsStatus" }
+    };
+
+    const doorInfo = {
+      door1: { card: "door1Card", status: "door1Status" },
+      door2: { card: "door2Card", status: "door2Status" },
+      mainDoor: { card: "mainDoorCard", status: "mainDoorStatus" }
+    };
+
+    function renderLight(key) {
+      const info = lightInfo[key];
+      const on = state[key];
+      document.getElementById(info.card).classList.toggle("active", on);
+      const status = document.getElementById(info.status);
+      status.textContent = on ? "ENCENDIDO" : "APAGADO";
+      status.classList.toggle("on", on);
+      const button = document.querySelector(`[data-light="${key}"]`);
+      button.textContent = on ? "Apagar luces" : "Encender luces";
+      button.setAttribute("aria-pressed", String(on));
+    }
+
+    function renderDoor(key) {
+      const info = doorInfo[key];
+      const open = state[key];
+      document.getElementById(info.card).classList.toggle("active", open);
+      const status = document.getElementById(info.status);
+      status.textContent = open ? "ABIERTA" : "CERRADA";
+      status.classList.toggle("open", open);
+      status.classList.toggle("closed", !open);
+      document.querySelector(`[data-door="${key}"]`).disabled = open;
+      document.querySelector(`[data-close-door="${key}"]`).disabled = !open;
+    }
+
+    function renderGate() {
+      const open = state.gate;
+      document.getElementById("gateCard").classList.toggle("active", open);
+      const status = document.getElementById("gateStatus");
+      status.textContent = open ? "ABIERTO" : "CERRADO";
+      status.classList.toggle("open", open);
+      status.classList.toggle("closed", !open);
+      document.getElementById("openGate").disabled = open;
+      document.getElementById("closeGate").disabled = !open;
+      document.getElementById("greenLamp").classList.toggle("active", open);
+      document.getElementById("redLamp").classList.toggle("active", !open);
+      document.getElementById("gateSummary").textContent = open ? "Abierto" : "Cerrado";
+    }
+
+    function renderSummary() {
+      const lightsOn = Object.keys(lightInfo).filter(key => state[key]).length * 2;
+      const doorsOpen = Object.keys(doorInfo).filter(key => state[key]).length;
+      document.getElementById("lightsCount").innerHTML = `${lightsOn} <span style="font-size:.85rem;color:#667085;font-weight:600">/ 8</span>`;
+      document.getElementById("doorsCount").innerHTML = `${doorsOpen} <span style="font-size:.85rem;color:#667085;font-weight:600">/ 3</span>`;
+    }
+
+    document.querySelectorAll("[data-light]").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.light;
+        state[key] = !state[key];
+        renderLight(key);
+        renderSummary();
+      });
+    });
+
+    document.querySelectorAll("[data-door]").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.door;
+        state[key] = true;
+        renderDoor(key);
+        renderSummary();
+      });
+    });
+
+    document.querySelectorAll("[data-close-door]").forEach(button => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.closeDoor;
+        state[key] = false;
+        renderDoor(key);
+        renderSummary();
+      });
+    });
+
+    document.getElementById("openGate").addEventListener("click", () => {
+      state.gate = true;
+      renderGate();
+    });
+
+    document.getElementById("closeGate").addEventListener("click", () => {
+      state.gate = false;
+      renderGate();
+    });
+
+    document.getElementById("allLightsOff").addEventListener("click", () => {
+      Object.keys(lightInfo).forEach(key => {
+        state[key] = false;
+        renderLight(key);
+      });
+      renderSummary();
+    });
+
+    document.getElementById("enterApp").addEventListener("click", () => {
+      const welcome = document.getElementById("welcomeScreen");
+      welcome.classList.add("leaving");
+      window.setTimeout(() => {
+        welcome.style.display = "none";
+        document.getElementById("dashboard").classList.remove("dashboard-hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 520);
+    });
+
+    Object.keys(lightInfo).forEach(renderLight);
+    Object.keys(doorInfo).forEach(renderDoor);
+    renderGate();
+    renderSummary();
+  </script>
+</body>
+</html>
