@@ -228,6 +228,12 @@
     .status.on { background: var(--green-soft); color: var(--green); }
     .status.open { background: var(--green-soft); color: var(--green); }
     .status.closed { background: #eef1f5; color: #606b7c; }
+    .status.auto { background: #e6f3ff; color: #1760a6; }
+    .automatic-label {
+      margin-top: 14px; padding: 9px; border-radius: 9px;
+      background: #eaf4fc; color: #1760a6; font-size: .78rem;
+      font-weight: 750; text-align: center;
+    }
     .toggle {
       width: 100%; margin-top: 14px; border: 0; border-radius: 11px; padding: 10px 12px;
       background: var(--primary-soft); color: var(--primary); font: inherit; font-weight: 750;
@@ -486,16 +492,16 @@
           </div>
           <div class="device-grid">
             <article class="device" id="frontLightsCard">
-              <div class="device-top"><div class="device-icon">🏡</div><span class="status" id="frontLightsStatus">APAGADO</span></div>
+              <div class="device-top"><div class="device-icon">🏡</div><span class="status auto" id="frontLightsStatus">AUTOMÁTICO</span></div>
               <div class="device-name" data-i18n="frontLights">Luces delanteras</div>
-              <div class="device-detail">3 luces · 1 control</div>
-              <button class="toggle" data-light="frontLights" aria-pressed="false">Encender luces</button>
+              <div class="device-detail" data-i18n="frontDetail">3 luces · Sensor LDR</div>
+              <div class="automatic-label" data-i18n="automaticMode">MODO AUTOMÁTICO</div>
             </article>
             <article class="device" id="backLightsCard">
-              <div class="device-top"><div class="device-icon">🌿</div><span class="status" id="backLightsStatus">APAGADO</span></div>
+              <div class="device-top"><div class="device-icon">🌿</div><span class="status auto" id="backLightsStatus">AUTOMÁTICO</span></div>
               <div class="device-name" data-i18n="backLights">Luces traseras</div>
-              <div class="device-detail">3 luces · 1 control</div>
-              <button class="toggle" data-light="backLights" aria-pressed="false">Encender luces</button>
+              <div class="device-detail" data-i18n="backDetail">3 luces · Sensor LDR</div>
+              <div class="automatic-label" data-i18n="automaticMode">MODO AUTOMÁTICO</div>
             </article>
           </div>
         </section>
@@ -565,7 +571,7 @@
             </div>
             <span class="status closed" id="bluetoothBadge">SIN CONEXIÓN</span>
           </div>
-          <p class="note">El indicador muestra el estado pendiente de conexión. Esta versión web todavía funciona en modo demostración: los botones actualizan la pantalla, pero no controlan el HC-05 ni los componentes físicos.</p>
+          <p class="note">El indicador muestra el estado pendiente de conexión. Esta versión web todavía funciona en modo demostración: los botones actualizan la pantalla, pero no controlan el HC-05 ni los componentes físicos. Las luces automáticas se muestran como controladas por LDR, pero la lectura real del sensor requiere integrar Arduino.</p>
         </section>
       </div>
     </div>
@@ -574,62 +580,62 @@
 
   <script>
     const translations = {
-      es: { on:"ENCENDIDO", off:"APAGADO", turnOn:"Encender luces", turnOff:"Apagar luces",
+      es: { on:"ENCENDIDO", off:"APAGADO", automaticStatus:"AUTOMÁTICO", turnOn:"Encender luces", turnOff:"Apagar luces",
         lightsOn:"Luces encendidas", doorsOpen:"Puertas abiertas", gate:"Portón", closed:"Cerrado",
         interior:"Iluminación interior", interiorDesc:"Cada botón controla las luces de ese ambiente.",
-        exterior:"Iluminación exterior", exteriorDesc:"Cada botón controla juntas las tres luces de cada sector.",
+        exterior:"Iluminación exterior", exteriorDesc:"Encendido automático según la luminosidad detectada por el sensor LDR.",
         kitchen:"Cocina y comedor", stairs:"Escalera", livingDown:"Living de abajo", upperLivingA:"Living de arriba · Grupo 1", upperLivingB:"Living de arriba · Grupo 2", bedroom:"Habitación", garageLights:"Luces del garaje",
         frontLights:"Luces delanteras", backLights:"Luces traseras", doors:"Puertas",
         doorsDesc:"Tres puertas controladas por servomotores.", open:"Abrir", close:"Cerrar",
         settings:"Configuración", home:"Inicio", lights:"Luces", gateOpen:"ABIERTO", gateClosed:"CERRADO",
         welcome:"Bienvenido a tu", house:"Casa Inteligente", intro:"Controlá la iluminación, las puertas y el portón desde un solo lugar.",
         enter:"Ingresar a mi hogar →", language:"Idioma", demo:"● MODO DEMOSTRACIÓN",
-        frontDetail:"3 luces · 1 control", backDetail:"3 luces · 1 control", livingDetail:"2 luces · 1 control",
+        frontDetail:"3 luces · Sensor LDR", backDetail:"3 luces · Sensor LDR", livingDetail:"2 luces · 1 control",
         twoDetail:"2 luces · 1 control", garageDetail:"2 luces · encendido automático", garageAutoDetail:"2 lights · automatic", automaticMode:"AUTOMATIC MODE",
         allOff:"Apagar todo", subtitle:"Panel de control de tu maqueta", tagline:"DOMÓTICA & ARDUINO",
         footer:"Tu casa, en tus manos · Panel de demostración", system:"Sistema offline",
         gateSection:"Portón", gateDescription:"Control del portón de la maqueta." },
-      en: { on:"ON", off:"OFF", turnOn:"Turn lights on", turnOff:"Turn lights off",
+      en: { on:"ON", off:"OFF", automaticStatus:"AUTOMATIC", turnOn:"Turn lights on", turnOff:"Turn lights off",
         lightsOn:"Lights on", doorsOpen:"Doors open", gate:"Garage gate", closed:"Closed",
         interior:"Indoor lighting", interiorDesc:"Each button controls the lights in that area.",
-        exterior:"Outdoor lighting", exteriorDesc:"Each button controls all three lights in each area.",
+        exterior:"Outdoor lighting", exteriorDesc:"Automatic lighting based on brightness detected by the LDR sensor.",
         kitchen:"Kitchen and dining room", stairs:"Stairs", livingDown:"Downstairs living room", upperLivingA:"Upstairs living room · Group 1", upperLivingB:"Upstairs living room · Group 2", bedroom:"Bedroom", garageLights:"Garage lights",
         frontLights:"Front lights", backLights:"Back lights", doors:"Doors",
         doorsDesc:"Three doors controlled by servomotors.", open:"Open", close:"Close",
         settings:"Settings", home:"Home", lights:"Lights", gateOpen:"OPEN", gateClosed:"CLOSED",
         welcome:"Welcome to your", house:"Smart Home", intro:"Control the lights, doors and garage gate from one place.",
         enter:"Enter my home →", language:"Language", demo:"● DEMO MODE",
-        frontDetail:"3 lights · 1 control", backDetail:"3 lights · 1 control", livingDetail:"2 lights · 1 control",
+        frontDetail:"3 lights · LDR sensor", backDetail:"3 lights · LDR sensor", livingDetail:"2 lights · 1 control",
         twoDetail:"2 lights · 1 control", garageDetail:"2 lights · automatic", garageAutoDetail:"2 lights · automatic", automaticMode:"AUTOMATIC MODE",
         allOff:"Turn everything off", subtitle:"Model control panel", tagline:"HOME AUTOMATION & ARDUINO",
         footer:"Your home, in your hands · Demo panel", system:"Offline system",
         gateSection:"Garage gate", gateDescription:"Model garage gate controls." },
-      pt: { on:"LIGADO", off:"DESLIGADO", turnOn:"Acender luzes", turnOff:"Apagar luzes",
+      pt: { on:"LIGADO", off:"DESLIGADO", automaticStatus:"AUTOMÁTICO", turnOn:"Acender luzes", turnOff:"Apagar luzes",
         lightsOn:"Luzes acesas", doorsOpen:"Portas abertas", gate:"Portão", closed:"Fechado",
         interior:"Iluminação interna", interiorDesc:"Cada botão controla as luzes desse ambiente.",
-        exterior:"Iluminação externa", exteriorDesc:"Cada botão controla juntas as três luzes de cada área.",
+        exterior:"Iluminação externa", exteriorDesc:"Acendimento automático conforme a luminosidade detectada pelo sensor LDR.",
         kitchen:"Cozinha e sala de jantar", stairs:"Escada", livingDown:"Sala de estar de baixo", upperLivingA:"Sala de cima · Grupo 1", upperLivingB:"Sala de cima · Grupo 2", bedroom:"Quarto", garageLights:"Luzes da garagem",
         frontLights:"Luzes da frente", backLights:"Luzes dos fundos", doors:"Portas",
         doorsDesc:"Três portas controladas por servomotores.", open:"Abrir", close:"Fechar",
         settings:"Configurações", home:"Início", lights:"Luzes", gateOpen:"ABERTO", gateClosed:"FECHADO",
         welcome:"Bem-vindo à sua", house:"Casa Inteligente", intro:"Controle a iluminação, as portas e o portão em um só lugar.",
         enter:"Entrar na minha casa →", language:"Idioma", demo:"● MODO DE DEMONSTRAÇÃO",
-        frontDetail:"3 luzes · 1 controle", backDetail:"3 luzes · 1 controle", livingDetail:"2 luzes · 1 controle",
+        frontDetail:"3 luzes · Sensor LDR", backDetail:"3 luzes · Sensor LDR", livingDetail:"2 luzes · 1 controle",
         twoDetail:"2 luzes · 1 controle", garageDetail:"2 luzes · automático", garageAutoDetail:"2 luzes · automático", automaticMode:"MODO AUTOMÁTICO",
         allOff:"Apagar tudo", subtitle:"Painel de controle da maquete", tagline:"AUTOMAÇÃO RESIDENCIAL & ARDUINO",
         footer:"Sua casa, nas suas mãos · Painel de demonstração", system:"Sistema offline",
         gateSection:"Portão", gateDescription:"Controles do portão da maquete." },
-      zh: { on:"已开启", off:"已关闭", turnOn:"打开灯光", turnOff:"关闭灯光",
+      zh: { on:"已开启", off:"已关闭", automaticStatus:"自动模式", turnOn:"打开灯光", turnOff:"关闭灯光",
         lightsOn:"已开启的灯", doorsOpen:"已打开的门", gate:"车库门", closed:"已关闭",
         interior:"室内照明", interiorDesc:"每个按钮控制该区域的灯光。",
-        exterior:"室外照明", exteriorDesc:"每个按钮同时控制该区域的三盏灯。",
+        exterior:"室外照明", exteriorDesc:"根据光敏电阻（LDR）检测到的亮度自动控制照明。",
         kitchen:"厨房和餐厅", stairs:"楼梯", livingDown:"楼下客厅", upperLivingA:"楼上客厅 · 第一组", upperLivingB:"楼上客厅 · 第二组", bedroom:"卧室", garageLights:"车库灯",
         frontLights:"前院灯", backLights:"后院灯", doors:"房门",
         doorsDesc:"三扇由舵机控制的门。", open:"打开", close:"关闭",
         settings:"设置", home:"主页", lights:"灯光", gateOpen:"已打开", gateClosed:"已关闭",
         welcome:"欢迎来到你的", house:"智能家居", intro:"在一个地方控制灯光、房门和车库门。",
         enter:"进入我的家 →", language:"语言", demo:"● 演示模式",
-        frontDetail:"3盏灯 · 1个控制按钮", backDetail:"3盏灯 · 1个控制按钮", livingDetail:"2盏灯 · 1个控制按钮",
+        frontDetail:"3盏灯 · 光敏传感器", backDetail:"3盏灯 · 光敏传感器", livingDetail:"2盏灯 · 1个控制按钮",
         twoDetail:"2盏灯 · 1个控制按钮", garageDetail:"2盏灯 · 自动控制", garageAutoDetail:"2盏自动灯", automaticMode:"自动模式",
         allOff:"关闭所有灯", subtitle:"智能模型控制面板", tagline:"智能家居与 ARDUINO",
         footer:"你的家，由你掌控 · 演示面板", system:"离线系统",
@@ -676,9 +682,9 @@
       upperLivingA: { card: "upperLivingA_Card", status: "upperLivingA_Status", count: 3 },
       upperLivingB: { card: "upperLivingB_Card", status: "upperLivingB_Status", count: 2 },
       bedroom: { card: "bedroomCard", status: "bedroomStatus", count: 2 },
-      garageLights: { card: "garageLightsCard", status: "garageLightsStatus", count: 2 },
-      frontLights: { card: "frontLightsCard", status: "frontLightsStatus", count: 3 },
-      backLights: { card: "backLightsCard", status: "backLightsStatus", count: 3 }
+      garageLights: { card: "garageLightsCard", status: "garageLightsStatus", count: 2, automatic: true },
+      frontLights: { card: "frontLightsCard", status: "frontLightsStatus", count: 3, automatic: true },
+      backLights: { card: "backLightsCard", status: "backLightsStatus", count: 3, automatic: true }
     };
 
     const doorInfo = {
@@ -690,10 +696,19 @@
     function renderLight(key) {
       const info = lightInfo[key];
       const on = state[key];
-      document.getElementById(info.card).classList.toggle("active", on);
+      const card = document.getElementById(info.card);
       const status = document.getElementById(info.status);
+      if (info.automatic) {
+        card.classList.remove("active");
+        status.textContent = translations[currentLanguage].automaticStatus;
+        status.classList.remove("on");
+        status.classList.add("auto");
+        return;
+      }
+      card.classList.toggle("active", on);
       status.textContent = on ? translations[currentLanguage].on : translations[currentLanguage].off;
       status.classList.toggle("on", on);
+      status.classList.remove("auto");
       const button = document.querySelector(`[data-light="${key}"]`);
       if (button) {
         button.textContent = on ? translations[currentLanguage].turnOff : translations[currentLanguage].turnOn;
@@ -728,7 +743,7 @@
     }
 
     function renderSummary() {
-      const lightsOn = Object.keys(lightInfo).reduce((total, key) => total + (state[key] ? lightInfo[key].count : 0), 0);
+      const lightsOn = Object.keys(lightInfo).reduce((total, key) => total + (!lightInfo[key].automatic && state[key] ? lightInfo[key].count : 0), 0);
       const doorsOpen = Object.keys(doorInfo).filter(key => state[key]).length;
       document.getElementById("lightsCount").innerHTML = `${lightsOn} <span style="font-size:.85rem;color:#667085;font-weight:600">/ 21</span>`;
       document.getElementById("doorsCount").innerHTML = `${doorsOpen} <span style="font-size:.85rem;color:#667085;font-weight:600">/ 3</span>`;
@@ -773,7 +788,7 @@
 
     document.getElementById("allLightsOff").addEventListener("click", () => {
       Object.keys(lightInfo).forEach(key => {
-        state[key] = false;
+        if (!lightInfo[key].automatic) state[key] = false;
         renderLight(key);
       });
       renderSummary();
